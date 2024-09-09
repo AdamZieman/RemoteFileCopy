@@ -162,15 +162,28 @@ xcopy "%sourceUserPath%Videos" "%destinationUserPath%Videos" /s/c/i/q/r/k/y 2>>%
 
 REM Copy non-standard files and directories
 echo Checking for additional files and directories ...
-for /f "delims=" %%i in ('dir /s /b excludeFromRemoteCopy.txt') do set excludeFilePath=%%i
-xcopy "C:\source\*" "D:\destination\" /s/c/i/q/r/k/y/exclude:%excludeFilePath%
+for /f "delims=" %%i in ('dir /s/b excludeFromRemoteCopy.txt') do set excludeFilePath=%%i
+xcopy "%sourceUserPath%*" "%destinationUserPath%" /s/c/i/q/r/k/y/exclude:%excludeFilePath% 2>>%logger%
 
 
-REM Copy Microsoft Edge Favorites
+REM Copy browser bookmarks
+:: Microsoft Edge Favorites
+echo Checking for Microsoft Edge Favorites ...
+set edgeFavoritesPath="AppData\Local\Microsoft\Edge\User Date\Default\Bookmarks"
+if exist "%sourceUserPath%%edgeFavoritesPath%" (
+    xcopy "%sourceUserPath%%edgeFavoritesPath%" "%destinationUserPath%%edgeFavoritesPath%" /s/c/i/q/r/k/y 2>>%logger%
+) else (
+    echo No Microsoft Edge Favorites to copy.
+)
+:: Google Chrome Bookmarks
+echo Checking for Google Chrome Bookmarks ...
+set chromeBookmarksPath="AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
+if exist "%sourceUserPath%%chromeBookmarksPath%" (
+    xcopy "%sourceUserPath%%chromeBookmarksPath%" "%destinationUserPath%%chromeBookmarksPath%" /s/c/i/q/r/k/y 2>>%logger%
+) else (
+    echo No Google Chrome Bookmarks to copy.
+)
 
-
-REM Copy Google Chrome Bookmarks
-
-
+echo Remote copy completed!
 endlocal
 exit /b 0
