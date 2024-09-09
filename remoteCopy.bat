@@ -119,14 +119,57 @@ if not exist "%destinationUserPath%" (
 )
 
 
-REM Copy Desktop files
-echo Copying Desktop ...
-:: xcopy zSource zDestination /s /c /i /q /r /k /y
-:: xcopy zSource zDestination /s /c /i /q /r /k /y 2>>error.log
-:: xcopy zSource zDestination /s /c /i /q /r /k /y >nul 2>>error.log
+REM Create a local log file
+:: get today's date in YYYYMMDD format
+for /f "tokens=2 delims==" %%i in ('wmic os get localdatetime /value') do set datetime=%%i
+set dateFormatted=%datetime:~0,8%
+
+:: create a blank log file
+if not exist "%HOMEPATH%\Logs\RemoteCopy\" (
+    mkdir "%HOMEPATH%\Logs\RemoteCopy\"
+)
+set logger="%HOMEPATH%\Logs\RemoteCopy\%dateFormatted%_%employeeID%_error.log"
+echo. > %logger%
+echo Local error log file created at %logger%
 
 
+REM Copy files from standard directores
+:: Contacts
+echo Checking Contacts directory ...
+xcopy "%sourceUserPath%Contacts" "%destinationUserPath%Contacts" /s/c/i/q/r/k/y 2>>%logger%
+:: Desktop
+echo Checking Desktop directory ...
+xcopy "%sourceUserPath%Desktop" "%destinationUserPath%Desktop" /s/c/i/q/r/k/y 2>>%logger%
+:: Documents
+echo Checking Documents directory ...
+xcopy "%sourceUserPath%Documents" "%destinationUserPath%Documents" /s/c/i/q/r/k/y 2>>%logger%
+:: Downloads
+echo Checking Downloads directory ...
+xcopy "%sourceUserPath%Downloads" "%destinationUserPath%Downloads" /s/c/i/q/r/k/y 2>>%logger%
+:: Favorites
+echo Checking Favorites directory ...
+xcopy "%sourceUserPath%Favorites" "%destinationUserPath%Favorites" /s/c/i/q/r/k/y 2>>%logger%
+:: Links
+echo Checking Links directory ...
+xcopy "%sourceUserPath%Links" "%destinationUserPath%Links" /s/c/i/q/r/k/y 2>>%logger%
+:: Pictures
+echo Checking Pictures directory ...
+xcopy "%sourceUserPath%Pictures" "%destinationUserPath%Pictures" /s/c/i/q/r/k/y 2>>%logger%
+:: Videos
+echo Checking Videos directory ...
+xcopy "%sourceUserPath%Videos" "%destinationUserPath%Videos" /s/c/i/q/r/k/y 2>>%logger%
 
+
+REM Copy non-standard files and directories
+echo Checking for additional files and directories ...
+for /f "delims=" %%i in ('dir /s /b excludeFromRemoteCopy.txt') do set excludeFilePath=%%i
+xcopy "C:\source\*" "D:\destination\" /s/c/i/q/r/k/y/exclude:%excludeFilePath%
+
+
+REM Copy Microsoft Edge Favorites
+
+
+REM Copy Google Chrome Bookmarks
 
 
 endlocal
