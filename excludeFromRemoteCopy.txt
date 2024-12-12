@@ -8,7 +8,7 @@ Downloads\
 Favorites\
 Links\
 Music\
-OneDrive\
+OneDrive*\
 Pictures\
 Saved Games\
 Searches\
