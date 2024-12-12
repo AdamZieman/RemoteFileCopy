@@ -1,189 +1,214 @@
 @echo off
 setlocal enabledelayedexpansion
 
+REM Prompts the user to input the source device name, destination device name, and employee ID. 
+REM Validates the input by checking the length and formatting of each entry. 
+REM - For device names, it ensures the length is either 7 or 9 characters, and appends 'DE' if the length is 7.
+REM - For employee IDs, it checks for specific length constraints (6, 7, or 9 characters) and validates the format (e.g., ends with 'a' for 7-character IDs, starts with 't2.' for 9-character IDs).
+REM If any input is invalid, the user is prompted to re-enter the information.
 
-REM Instantiate the name for the source device.
-set /p sourceDevice="Enter the source device name: "
 
-:: get variable length (up to 10)
+:GetSourceDeviceName
+
+echo.
+
+set /p sourceDeviceName="Enter the source's device name: "
 set length=0
+
 for /l %%i in (0,1,9) do (
-    if "!sourceDevice:~%%i,1!"=="" goto endSourceDeviceCount
+    if "!sourceDeviceName:~%%i,1!"=="" (
+		goto :StopCountingSourceDeviceName
+	)
+	
     set /a length+=1
 )
-:endSourceDeviceCount
 
-:: check variable length and format
-if %length%==7 (	
-    set sourceDevice=DE%sourceDevice%
-) else if %length%==9 (
-    if /i not "%sourceDevice:~0,2%"=="de" (
-		echo Error: Invalid device name format.
-		exit /b 1
+:StopCountingSourceDeviceName
+
+if !length!==7 (	
+    set sourceDeviceName=DE!sourceDeviceName!
+) else if !length!==9 (
+    if /i not "!sourceDeviceName:~0,2!"=="de" (
+		echo Error: Invalid device name.
+		goto :GetSourceDeviceName
     )
 ) else (
-    echo Error: Invalid device name length.
-    exit /b 1
+    echo Error: Invalid device name.
+    goto :GetSourceDeviceName
 )
 
+:GetDestinationDeviceName
 
-REM Instantiate the name for the destination device.
-set /p destinationDevice="Enter the destination device name: "
+echo.
 
-:: get variable length (up to 10)
+set /p destinationDeviceName="Enter the destination device name: "
 set length=0
+
 for /l %%i in (0,1,9) do (
-    if "!destinationDevice:~%%i,1!"=="" goto endDestinationDeviceCount
+    if "!destinationDeviceName:~%%i,1!"=="" (
+		goto :StopCountingDestinationDeviceName
+	)
+	
     set /a length+=1
 )
-:endDestinationDeviceCount
 
-:: check variable length and format
-if %length%==7 (	
-    set destinationDevice=DE%destinationDevice%
-) else if %length%==9 (
-    if /i not "%destinationDevice:~0,2%"=="de" (
-		echo Error: Invalid device name format.
-		exit /b 1
+:StopCountingDestinationDeviceName
+
+if !length!==7 (	
+    set destinationDeviceName=DE!destinationDeviceName!
+) else if !length!==9 (
+    if /i not "!destinationDeviceName:~0,2!"=="de" (
+		echo Error: Invalid device name.
+		goto :StopCountingDestinationDeviceName
     )
 ) else (
-    echo Error: Invalid device name length.
-    exit /b 1
+    echo Error: Invalid device name.
+    goto :StopCountingDestinationDeviceName
 )
 
+:GetEmployeeID
 
-REM Instantiate the employee ID.
+echo.
+
 set /p employeeID="Enter the employee ID: "
-
-:: get the variable length 
 set length=0
+
 for /l %%i in (0,1,9) do (
-    if "!employeeID:~%%i,1!"=="" goto endEmployeeIDCount
+    if "!employeeID:~%%i,1!"=="" (
+		goto :StopCountingEmployeeID
+	)
+	
     set /a length+=1
 )
-:endEmployeeIDCount
 
-:: check the variable length and format
-if not %length%==6 (
-	if %length%==7 (
+:StopCountingEmployeeID
+
+if not !length!==6 (
+	if !length!==7 (
 		if /i not "!employeeID:~-1!"=="a" (
-			echo Error: Invalid employee ID length.
-			exit /b 1
+			echo Error: Invalid employee ID.
+			goto :GetEmployeeID
 		)
-	) else if %length%==9 (
+	) else if !length!==9 (
 		if /i not "!employeeID:~0,3!"=="t2." (
-			echo Error: Invalid employee ID length.
-			exit /b 1
+			echo Error: Invalid employee ID.
+			goto :GetEmployeeID
 		)
 	) else (
-		echo Error: Invalid employee ID length.
-		exit /b 1
+		echo Error: Invalid employee ID.
+		goto :GetEmployeeID
 	)
 )
 
 
-REM Instantiate the path to the employee ID on the source device.
+
+REM Checks if both the source and destination devices are accessible on the network and verifies the existence of the user profile on each device.
+REM If either the device cannot be accessed remotely or the user's profile directory does not exist, an error message is displayed and the script exits.
+
 echo.
-echo Connecting to %sourceDevice% ...
+echo Check whether the devices are recognized on the network and the user profile exists on both devices.
+echo ... checking !sourceDeviceName!
 
-:: set the path to the source device
-set sourceDevicePath="\\%sourceDevice%\C$\"
-if not exist "%sourceDevicePath%" (
-	echo Error: %sourceDevice% not found.
-	exit /b 1
+set workingSourcePath="\\!sourceDeviceName!\C$\"
+
+if not exist "!workingSourcePath!" (
+	echo Error: !sourceDeviceName! not found.
+	goto :ExitOnError
 )
 
-:: set the path to the employee ID on the source device
-set sourceUserPath="%sourceDevicePath%Users\%employeeID%\"
-if not exist "%sourceUserPath%" (
-	echo Error: %employeeID% does not exist on %sourceDevice%.
-	exit /b 1
+set workingSourcePath="!workingSourcePath!Users\!employeeID!\"
+
+if not exist "!workingSourcePath!" (
+	echo Error: !employeeID! does not exist on !sourceDeviceName!.
+	goto :ExitOnError
+)
+
+echo ... checking !destinationDeviceName!
+
+set workingDestinationPath="\\!destinationDeviceName!\C$\"
+
+if not exist "!workingDestinationPath!" (
+	echo Error: !destinationDeviceName! not found.
+	goto :ExitOnError
+)
+
+set workingDestinationPath="!workingDestinationPath!Users\!employeeID!\"
+
+if not exist "!workingDestinationPath!" (
+	echo Error: !employeeID! does not exist on !destinationDeviceName!.
+	goto :ExitOnError
 )
 
 
-REM Instantiate the path to the employee ID on the destination device.
-echo Connecting to %destinationDevice% ...
 
-:: set the path to the destination device
-set destinationDevicePath="\\%destinationDevice%\C$\"
-if not exist "%destinationDevicePath%" (
-	echo Error: %destinationDevice% not found.
-	exit /b 1
-)
+REM Copies user directories from the source device to the destination device, preserving subdirectories and file attributes, and excludes specified files listed in 'excludeFromRemoteCopy.txt'.
 
-:: set the path to the employee ID on the destination device
-set destinationUserPath="%destinationDevicePath%Users\%employeeID%\"
-if not exist "%destinationUserPath%" (
-	echo Error: %employeeID% does not exist on %destinationDevice%.
-	exit /b 1
-)
+echo Copying files and sub-directories
+echo ... checking the Contacts directory
+xcopy "!workingSourcePath!Contacts" "!workingDestinationPath!Contacts" /E /C /I /Q /Y /J >nul
 
+echo ... checking the Favorites directory
+xcopy "!workingSourcePath!Favorites" "!workingDestinationPath!Favorites" /E /C /I /Q /Y /J >nul
 
-REM Create a local log file
-:: get today's date in YYYYMMDD format
-for /f "tokens=2 delims==" %%i in ('wmic os get localdatetime /value') do set datetime=%%i
-set dateFormatted=%datetime:~0,8%
+echo ... checking the Links directory
+xcopy "!workingSourcePath!Links" "!workingDestinationPath!Links" /E /C /I /Q /Y /J >nul
 
-:: create a blank log file
-if not exist "%HOMEPATH%\Logs\RemoteCopy\" (
-    mkdir "%HOMEPATH%\Logs\RemoteCopy\"
-)
-set logger="%HOMEPATH%\Logs\RemoteCopy\%dateFormatted%_%employeeID%_error.log"
-echo. > %logger%
-echo Local error log file created at %logger%
+echo ... checking the Desktop directory
+xcopy "!workingSourcePath!Desktop" "!workingDestinationPath!Desktop" /E /C /I /Q /Y /J >nul
 
+echo ... checking the Documents directory
+xcopy "!workingSourcePath!Documents" "!workingDestinationPath!Documents" /E /C /I /Q /Y /J >nul
 
-REM Copy files from standard directores
-:: Contacts
-echo Checking Contacts directory ...
-xcopy "%sourceUserPath%Contacts" "%destinationUserPath%Contacts" /s/c/i/q/r/k/y 2>>%logger%
-:: Desktop
-echo Checking Desktop directory ...
-xcopy "%sourceUserPath%Desktop" "%destinationUserPath%Desktop" /s/c/i/q/r/k/y 2>>%logger%
-:: Documents
-echo Checking Documents directory ...
-xcopy "%sourceUserPath%Documents" "%destinationUserPath%Documents" /s/c/i/q/r/k/y 2>>%logger%
-:: Downloads
-echo Checking Downloads directory ...
-xcopy "%sourceUserPath%Downloads" "%destinationUserPath%Downloads" /s/c/i/q/r/k/y 2>>%logger%
-:: Favorites
-echo Checking Favorites directory ...
-xcopy "%sourceUserPath%Favorites" "%destinationUserPath%Favorites" /s/c/i/q/r/k/y 2>>%logger%
-:: Links
-echo Checking Links directory ...
-xcopy "%sourceUserPath%Links" "%destinationUserPath%Links" /s/c/i/q/r/k/y 2>>%logger%
-:: Pictures
-echo Checking Pictures directory ...
-xcopy "%sourceUserPath%Pictures" "%destinationUserPath%Pictures" /s/c/i/q/r/k/y 2>>%logger%
-:: Videos
-echo Checking Videos directory ...
-xcopy "%sourceUserPath%Videos" "%destinationUserPath%Videos" /s/c/i/q/r/k/y 2>>%logger%
+echo ... checking the Downloads directory
+xcopy "!workingSourcePath!Downloads" "!workingDestinationPath!Downloads" /E /C /I /Q /Y /J >nul
 
+echo ... checking the Pictures directory
+xcopy "!workingSourcePath!Pictures" "!workingDestinationPath!Pictures" /E /C /I /Q /Y /J >nul
 
-REM Copy non-standard files and directories
-echo Checking for additional files and directories ...
+echo ... checking the Videos directory
+xcopy "!workingSourcePath!Videos" "!workingDestinationPath!Videos" /E /C /I /Q /Y /J >nul
+
+echo ... checking for additional files and directories
 for /f "delims=" %%i in ('dir /s/b excludeFromRemoteCopy.txt') do set excludeFilePath=%%i
-xcopy "%sourceUserPath%*" "%destinationUserPath%" /s/c/i/q/r/k/y/exclude:%excludeFilePath% 2>>%logger%
+xcopy "!workingSourcePath!*" "!workingDestinationPath!" /E /C /I /Q /Y /J /EXCLUDE:!excludeFilePath!
 
 
-REM Copy browser bookmarks
-:: Microsoft Edge Favorites
-echo Checking for Microsoft Edge Favorites ...
-set edgeFavoritesPath="AppData\Local\Microsoft\Edge\User Date\Default\Bookmarks"
-if exist "%sourceUserPath%%edgeFavoritesPath%" (
-    xcopy "%sourceUserPath%%edgeFavoritesPath%" "%destinationUserPath%%edgeFavoritesPath%" /s/c/i/q/r/k/y 2>>%logger%
+
+REM Copies browser bookmarks from the source device to the destination device for Microsoft Edge and Google Chrome.
+
+echo Copying browser bookmarks
+echo ... checking Mircrosoft Edge
+
+set edgeFavoritesPath="AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
+
+if exist "!workingSourcePath!!edgeFavoritesPath!" (
+    xcopy "!workingSourcePath!!edgeFavoritesPath!" "!workingDestinationPath!!edgeFavoritesPath!" /E /C /I /Q /Y /J >nul
 ) else (
-    echo No Microsoft Edge Favorites to copy.
+    echo Warning: No Microsoft Edge favorites found on the source device.
 )
-:: Google Chrome Bookmarks
-echo Checking for Google Chrome Bookmarks ...
+
+echo ... checking Google Chrome
+
 set chromeBookmarksPath="AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
-if exist "%sourceUserPath%%chromeBookmarksPath%" (
-    xcopy "%sourceUserPath%%chromeBookmarksPath%" "%destinationUserPath%%chromeBookmarksPath%" /s/c/i/q/r/k/y 2>>%logger%
+
+if exist "!workingSourcePath!!chromeBookmarksPath!" (
+    xcopy "!workingSourcePath!!chromeBookmarksPath!" "!workingDestinationPath!!chromeBookmarksPath!" /E /C /I /Q /Y /J >nul
 ) else (
-    echo No Google Chrome Bookmarks to copy.
+    echo Warning: No Microsoft Edge favorites found on the source device.
 )
 
-echo Remote copy completed!
+goto :ExitOnSuccess
+
+
+
+REM This section handles the script's completion by either confirming success or handling errors.
+REM If the script completes successfully, it prints a success message and ends the local environment.
+REM If an error occurs, it simply ends the local environment without further action.
+
+:ExitOnSuccess
+echo.
+echo Remote copy is completed.
 endlocal
-exit /b 0
+
+:ExitOnError
+endlocal
