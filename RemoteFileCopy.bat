@@ -10,8 +10,6 @@ REM If any input is invalid, the user is prompted to re-enter the information.
 
 :GetSourceDeviceName
 
-echo.
-
 set /p sourceDeviceName="Enter the source's device name: "
 set length=0
 
@@ -34,12 +32,11 @@ if !length!==7 (
     )
 ) else (
     echo Error: Invalid device name.
+	echo.
     goto :GetSourceDeviceName
 )
 
 :GetDestinationDeviceName
-
-echo.
 
 set /p destinationDeviceName="Enter the destination device name: "
 set length=0
@@ -63,12 +60,11 @@ if !length!==7 (
     )
 ) else (
     echo Error: Invalid device name.
+	echo.
     goto :StopCountingDestinationDeviceName
 )
 
 :GetEmployeeID
-
-echo.
 
 set /p employeeID="Enter the employee ID: "
 set length=0
@@ -96,6 +92,7 @@ if not !length!==6 (
 		)
 	) else (
 		echo Error: Invalid employee ID.
+		echo.
 		goto :GetEmployeeID
 	)
 )
@@ -109,14 +106,14 @@ echo.
 echo Check whether the devices are recognized on the network and the user profile exists on both devices.
 echo ... checking !sourceDeviceName!
 
-set workingSourcePath="\\!sourceDeviceName!\C$\"
+set workingSourcePath=\\!sourceDeviceName!\C$\
 
 if not exist "!workingSourcePath!" (
 	echo Error: !sourceDeviceName! not found.
 	goto :ExitOnError
 )
 
-set workingSourcePath="!workingSourcePath!Users\!employeeID!\"
+set workingSourcePath=!workingSourcePath!Users\!employeeID!\
 
 if not exist "!workingSourcePath!" (
 	echo Error: !employeeID! does not exist on !sourceDeviceName!.
@@ -125,14 +122,14 @@ if not exist "!workingSourcePath!" (
 
 echo ... checking !destinationDeviceName!
 
-set workingDestinationPath="\\!destinationDeviceName!\C$\"
+set workingDestinationPath=\\!destinationDeviceName!\C$\
 
 if not exist "!workingDestinationPath!" (
 	echo Error: !destinationDeviceName! not found.
 	goto :ExitOnError
 )
 
-set workingDestinationPath="!workingDestinationPath!Users\!employeeID!\"
+set workingDestinationPath=!workingDestinationPath!Users\!employeeID!\
 
 if not exist "!workingDestinationPath!" (
 	echo Error: !employeeID! does not exist on !destinationDeviceName!.
@@ -143,46 +140,68 @@ if not exist "!workingDestinationPath!" (
 
 REM Copies user directories from the source device to the destination device, preserving subdirectories and file attributes, and excludes specified files listed in 'excludeFromRemoteCopy.txt'.
 
+echo.
 echo Copying files and sub-directories
 echo ... checking the Contacts directory
-xcopy "!workingSourcePath!Contacts" "!workingDestinationPath!Contacts" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Contacts\" (
+	xcopy !workingSourcePath!Contacts\ !workingDestinationPath!Contacts\ /E /C /I /Q /Y /J >nul
+)
 
 echo ... checking the Favorites directory
-xcopy "!workingSourcePath!Favorites" "!workingDestinationPath!Favorites" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Favorites\" (
+	xcopy !workingSourcePath!Favorites\ !workingDestinationPath!Favorites\ /E /C /I /Q /Y /J >nul
+)
 
 echo ... checking the Links directory
-xcopy "!workingSourcePath!Links" "!workingDestinationPath!Links" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Links\" (
+	xcopy !workingSourcePath!Links\ !workingDestinationPath!Links\ /E /C /I /Q /Y /J >nul
+)
 
 echo ... checking the Desktop directory
-xcopy "!workingSourcePath!Desktop" "!workingDestinationPath!Desktop" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Desktop\" (
+	xcopy !workingSourcePath!Desktop\ !workingDestinationPath!Desktop\ /E /C /I /Q /Y /J >nul
+)
 
 echo ... checking the Documents directory
-xcopy "!workingSourcePath!Documents" "!workingDestinationPath!Documents" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Documents\" (
+	xcopy !workingSourcePath!Documents\ !workingDestinationPath!Documents\ /E /C /I /Q /Y /J >nul
+)
 
 echo ... checking the Downloads directory
-xcopy "!workingSourcePath!Downloads" "!workingDestinationPath!Downloads" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Downloads\" (
+	xcopy !workingSourcePath!Downloads\ !workingDestinationPath!Downloads\ /E /C /I /Q /Y /J >nul
+)
 
 echo ... checking the Pictures directory
-xcopy "!workingSourcePath!Pictures" "!workingDestinationPath!Pictures" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Pictures\" (
+	xcopy !workingSourcePath!Pictures\ !workingDestinationPath!Pictures\ /E /C /I /Q /Y /J >nul
+)
 
 echo ... checking the Videos directory
-xcopy "!workingSourcePath!Videos" "!workingDestinationPath!Videos" /E /C /I /Q /Y /J >nul
+if exist "!workingSourcePath!Videos\" (
+	xcopy !workingSourcePath!Videos\ !workingDestinationPath!Videos\ /E /C /I /Q /Y /J >nul
+)
 
-echo ... checking for additional files and directories
-for /f "delims=" %%i in ('dir /s/b excludeFromRemoteCopy.txt') do set excludeFilePath=%%i
-xcopy "!workingSourcePath!*" "!workingDestinationPath!" /E /C /I /Q /Y /J /EXCLUDE:!excludeFilePath!
+echo ... checking for any additional files and directories
+for /f "delims=" %%i in ('dir /s/b remoteFileCopy_excludeFiles.txt') do set excludeFilePath=%%i
+if exist "!excludeFilePath!" (
+    xcopy !workingSourcePath!!edgeFavoritesPath! !workingDestinationPath!!edgeFavoritesPath! /E /C /I /Q /Y /J >nul
+)
 
 
 
 REM Copies browser bookmarks from the source device to the destination device for Microsoft Edge and Google Chrome.
 
+echo.
 echo Copying browser bookmarks
 echo ... checking Mircrosoft Edge
 
 set edgeFavoritesPath="AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
 
 if exist "!workingSourcePath!!edgeFavoritesPath!" (
-    xcopy "!workingSourcePath!!edgeFavoritesPath!" "!workingDestinationPath!!edgeFavoritesPath!" /E /C /I /Q /Y /J >nul
+    xcopy !workingSourcePath!!edgeFavoritesPath! !workingDestinationPath!!edgeFavoritesPath! /E /C /-I /Q /Y /J >nul
+	echo Warning: If Microsoft Edge was open, user may need to re-launch application for changes to take affect.
+	echo Warning: User will need to show favorites in Microsoft Edge.
 ) else (
     echo Warning: No Microsoft Edge favorites found on the source device.
 )
@@ -192,9 +211,10 @@ echo ... checking Google Chrome
 set chromeBookmarksPath="AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
 
 if exist "!workingSourcePath!!chromeBookmarksPath!" (
-    xcopy "!workingSourcePath!!chromeBookmarksPath!" "!workingDestinationPath!!chromeBookmarksPath!" /E /C /I /Q /Y /J >nul
+    xcopy !workingSourcePath!!chromeBookmarksPath! !workingDestinationPath!!chromeBookmarksPath! /E /C /-I /Q /Y /J >nul
+	echo Warning: If Google Chrome was open, user may need to re-launch application for changes to take affect.
 ) else (
-    echo Warning: No Microsoft Edge favorites found on the source device.
+    echo Warning: No Google Chorme bookmarks found on the source device.
 )
 
 goto :ExitOnSuccess
@@ -208,6 +228,10 @@ REM If an error occurs, it simply ends the local environment without further act
 :ExitOnSuccess
 echo.
 echo Remote copy is completed.
+echo.
+echo WARNING: Does the user need OneDrive set up on the destination computer?
+echo WARNING: Does the user need to configure their Microsoft OneNote?
+echo WARNING: Does the user need to map any networked printers?
 endlocal
 
 :ExitOnError
