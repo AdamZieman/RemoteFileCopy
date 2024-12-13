@@ -1,7 +1,7 @@
-# RemoteFileCopy.bat
+# Remote File Copy
 
 ## Overview
-The `RemoteFileCopy.bat` script facilitates copying user profile files and directories between two devices within an enterprise network. It includes validation for device names and employee IDs, ensures the user profiles exist on both devices, and transfers files while excluding those specified in a configuration file.
+This script script facilitates copying user profile files and directories between two devices within an enterprise network. It includes validation for device names and employee IDs, ensures the user profiles exist on both devices, and transfers files while excluding those specified in a configuration file.
 
 ## Prerequisites
 To use this script successfully, ensure the following conditions are met:
