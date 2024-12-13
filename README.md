@@ -1,13 +1,12 @@
 # Remote File Copy
 
 ## Overview
-This script script facilitates copying user profile files and directories between two devices within an enterprise network. It includes validation for device names and employee IDs, ensures the user profiles exist on both devices, and transfers files while excluding those specified in a configuration file.
+This script script facilitates copying user profile files and directories between two devices within an enterprise network. It includes validation for device names and employee IDs, ensures the user profiles exist on both devices, and transfers files while excluding certain files and directories on predefined logic.
 
 ## Prerequisites
 1. **Administrator Permissions:** The script must be run with administrative privileges to access and modify system files.
 2. **Device Connectivity:** Both source and destination devices must be powered on and connected to the enterprise network.
 3. **User Profile Presence:** The user profile corresponding to the specified employee ID must exist on both the source and destination devices.
-4. **Exclusion File:** A file named `remoteFileCopy_excludeFiles.txt` must be present in the script directory if specific files or directories need to be excluded during the copy process.
 
 ## Script Functionality
 1. **Input Validation:**
@@ -56,13 +55,11 @@ This script script facilitates copying user profile files and directories betwee
 
 ## Dependencies
 - Windows OS: Designed for Windows systems with standard directory structures.
-- The `xcopy` command must be available on the system.
+- The `robocopy` command and the `xcopy` command must be available on the system.
 
 ## Troubleshooting
 - **Device Not Found:** Ensure both devices are powered on, connected to the network, and their names are entered correctly.
 - **Profile Not Found:** Verify the employee ID matches the user profile directory on both devices.
-- **Exclusion Issues:** Confirm the `remoteFileCopy_excludeFiles.txt` file is in the correct location and properly formatted.
 
 ## Notes
 - This script is intended for enterprise use and assumes an Active Directory environment with consistent device and user profile naming conventions.
-- It is recommended to test the script in a controlled environment before deploying it broadly.
