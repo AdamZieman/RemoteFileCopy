@@ -138,55 +138,14 @@ if not exist "!workingDestinationPath!" (
 
 
 
-REM Copies user directories from the source device to the destination device, preserving subdirectories and file attributes, and excludes specified files listed in 'excludeFromRemoteCopy.txt'.
+REM Copies user directories from the source device to the destination device and excludes specified files and directories.
 
 echo.
 echo Copying files and sub-directories
-echo ... checking the Contacts directory
-if exist "!workingSourcePath!Contacts\" (
-	xcopy !workingSourcePath!Contacts\ !workingDestinationPath!Contacts\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking the Favorites directory
-if exist "!workingSourcePath!Favorites\" (
-	xcopy !workingSourcePath!Favorites\ !workingDestinationPath!Favorites\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking the Links directory
-if exist "!workingSourcePath!Links\" (
-	xcopy !workingSourcePath!Links\ !workingDestinationPath!Links\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking the Desktop directory
-if exist "!workingSourcePath!Desktop\" (
-	xcopy !workingSourcePath!Desktop\ !workingDestinationPath!Desktop\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking the Documents directory
-if exist "!workingSourcePath!Documents\" (
-	xcopy !workingSourcePath!Documents\ !workingDestinationPath!Documents\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking the Downloads directory
-if exist "!workingSourcePath!Downloads\" (
-	xcopy !workingSourcePath!Downloads\ !workingDestinationPath!Downloads\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking the Pictures directory
-if exist "!workingSourcePath!Pictures\" (
-	xcopy !workingSourcePath!Pictures\ !workingDestinationPath!Pictures\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking the Videos directory
-if exist "!workingSourcePath!Videos\" (
-	xcopy !workingSourcePath!Videos\ !workingDestinationPath!Videos\ /E /C /I /Q /Y /J >nul
-)
-
-echo ... checking for any additional files and directories
-for /f "delims=" %%i in ('dir /s/b remoteFileCopy_excludeFiles.txt') do set excludeFilePath=%%i
-if exist "!excludeFilePath!" (
-    xcopy !workingSourcePath!!edgeFavoritesPath! !workingDestinationPath!!edgeFavoritesPath! /E /C /I /Q /Y /J >nul
-)
+robocopy !workingSourcePath! !workingDestinationPath! /E /J /NJH /NJS /XF NTUSER.DAT ntuser.dat.LOG1 ntuser.dat.LOG2 ^
+    /XX /XD "Contacts" "Favorites" "Links" "Pictures" "Videos" "Searches" "Saved Games" "Music" ".cisco" ".ms-ad" ^
+	"AppData" "Application Data" "Cookies" "Local Settings" "NetHood" "PrintHood" "SendTo" "Templates" "Recent" "Start Menu" ^
+    "OneDrive" "OneDrive - Advocate Health"
 
 
 
@@ -194,9 +153,9 @@ REM Copies browser bookmarks from the source device to the destination device fo
 
 echo.
 echo Copying browser bookmarks
-echo ... checking Mircrosoft Edge
 
 set edgeFavoritesPath="AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
+set chromeBookmarksPath="AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
 
 if exist "!workingSourcePath!!edgeFavoritesPath!" (
     xcopy !workingSourcePath!!edgeFavoritesPath! !workingDestinationPath!!edgeFavoritesPath! /E /C /-I /Q /Y /J >nul
@@ -205,10 +164,6 @@ if exist "!workingSourcePath!!edgeFavoritesPath!" (
 ) else (
     echo Warning: No Microsoft Edge favorites found on the source device.
 )
-
-echo ... checking Google Chrome
-
-set chromeBookmarksPath="AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
 
 if exist "!workingSourcePath!!chromeBookmarksPath!" (
     xcopy !workingSourcePath!!chromeBookmarksPath! !workingDestinationPath!!chromeBookmarksPath! /E /C /-I /Q /Y /J >nul
