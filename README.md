@@ -1,7 +1,7 @@
 # Remote File Copy
 
 ## Overview
-This script script facilitates copying user profile files and directories between two devices within an enterprise network. It includes validation for device names and employee IDs, ensures the user profiles exist on both devices, and transfers files while excluding certain files and directories on predefined logic.
+This batch script facilitates copying user profile files and directories between two devices within an enterprise network. It includes validation for device names and employee IDs, ensures the user profiles exist on both devices, and transfers files while excluding certain files and directories on predefined logic.
 
 ## Prerequisites
 1. **Administrator Permissions:** The script must be run with administrative privileges to access and modify system files.
